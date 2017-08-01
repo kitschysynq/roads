@@ -48,7 +48,7 @@ Game.tick = function (elapsed) {
 
 Game.load = function () {
 	return [
-		Loader.loadImage('tiles', '../images/atlas.jpg')
+		Loader.loadImage('tiles', 'images/atlas.jpg')
 	];
 };
 
