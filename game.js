@@ -120,10 +120,10 @@ Game.init = function () {
 Game.update = function (delta) {
 	var dirx = 0;
 	var diry = 0;
-	if(Keyboard.isDown(Keyboard.LEFT)) { dirx = -1 };
-	if(Keyboard.isDown(Keyboard.RIGHT)) { dirx = 1 };
-	if(Keyboard.isDown(Keyboard.UP)) { diry = -1 };
-	if(Keyboard.isDown(Keyboard.DOWN)) { diry = 1 };
+	if(Keyboard.isDown(Keyboard.LEFT)) { dirx = -1; };
+	if(Keyboard.isDown(Keyboard.RIGHT)) { dirx = 1; };
+	if(Keyboard.isDown(Keyboard.UP)) { diry = -1; };
+	if(Keyboard.isDown(Keyboard.DOWN)) { diry = 1; };
 	this.camera.move(delta, dirx, diry);
 };
 
@@ -131,12 +131,12 @@ Game.render = function () {
 	var startCol = Math.floor(this.camera.x / map.tsize);
 	var endCol = startCol + (this.camera.width / map.tsize);
 	var startRow = Math.floor(this.camera.y / map.tsize);
-	var endRow = startRow + Math.ceil(this.camera.height / map.tsize);
+	var endRow = startRow + (this.camera.height / map.tsize);
 	var offsetX = -this.camera.x + startCol * map.tsize;
 	var offsetY = -this.camera.y + startRow * map.tsize;
 
 	for (var c = startCol; c <= endCol; c++) {
-		for (var r = startRow; r <= endRow; r++) {
+		for (var r = startRow; r <= endRow + 1; r++) {
 			var tile = map.getTile(c, r);
 			var x = (c - startCol) * map.tsize + offsetX;
 			var y = (r - startRow) * map.tsize + offsetY;
