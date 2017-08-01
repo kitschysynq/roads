@@ -23,6 +23,64 @@ Loader.getImage = function (key) {
 	return (key in this.images) ? this.images[key] : null;
 };
 
+var Keyboard = {};
+
+Keyboard.LEFT = 37;
+Keyboard.RIGHT = 39;
+Keyboard.UP = 38;
+Keyboard.DOWN = 40;
+
+Keyboard._keys = {};
+
+Keyboard.listenForEvents = function (keys) {
+	window.addEventListener('keydown', this._onKeyDown.bind(this));
+	window.addEventListener('keyup', this._onKeyUp.bind(this));
+	keys.forEach(function (key) {
+		this._keys[key] = false;
+	}.bind(this));
+};
+
+Keyboard._onKeyDown = function (event) {
+	var keyCode = event.keyCode;
+	if (keyCode in this._keys) {
+		event.preventDefault();
+		this._keys[keyCode] = true;
+	}
+};
+
+Keyboard._onKeyUp = function (event) {
+	var keyCode = event.keyCode;
+	if (keyCode in this._keys) {
+		event.preventDefault();
+		this._keys[keyCode] = false;
+	}
+};
+
+Keyboard.isDown = function (keyCode) {
+	if (!keyCode in this._keys) {
+		throw new Error('Keycode ' + keyCode + ' is not being listened to');
+	}
+	return this._keys[keyCode];
+};
+
+function Camera (map, width, height) {
+	this.x = 0;
+	this.y = 0;
+	this.width = width;
+	this.height = height;
+	this.maxX = map.cols * map.tsize - width;
+	this.maxY = map.rows * map.tsize - height;
+};
+
+Camera.SPEED = 256;
+
+Camera.prototype.move = function (delta, dirx, diry) {
+	this.x += dirx * Camera.SPEED * delta;
+	this.y += diry * Camera.SPEED * delta;
+	this.x = Math.max(0, Math.min(this.x, this.maxX));
+	this.y = Math.max(0, Math.min(this.y, this.maxY));
+};
+
 var Game = {};
 
 Game.run = function (context) {
@@ -53,16 +111,35 @@ Game.load = function () {
 };
 
 Game.init = function () {
+	Keyboard.listenForEvents(
+		[Keyboard.LEFT, Keyboard.RIGHT, Keyboard.UP, Keyboard.DOWN]);
 	this.tileAtlas = Loader.getImage('tiles');
+	this.camera = new Camera(map, 640, 480);
 };
 
 Game.update = function (delta) {
+	var dirx = 0;
+	var diry = 0;
+	if(Keyboard.isDown(Keyboard.LEFT)) { dirx = -1 };
+	if(Keyboard.isDown(Keyboard.RIGHT)) { dirx = 1 };
+	if(Keyboard.isDown(Keyboard.UP)) { diry = -1 };
+	if(Keyboard.isDown(Keyboard.DOWN)) { diry = 1 };
+	this.camera.move(delta, dirx, diry);
 };
 
 Game.render = function () {
-	for (var c = 0; c < map.cols; c++) {
-		for (var r = 0; r < map.rows; r++) {
+	var startCol = Math.floor(this.camera.x / map.tsize);
+	var endCol = startCol + (this.camera.width / map.tsize);
+	var startRow = Math.floor(this.camera.y / map.tsize);
+	var endRow = startRow + Math.ceil(this.camera.height / map.tsize);
+	var offsetX = -this.camera.x + startCol * map.tsize;
+	var offsetY = -this.camera.y + startRow * map.tsize;
+
+	for (var c = startCol; c <= endCol; c++) {
+		for (var r = startRow; r <= endRow; r++) {
 			var tile = map.getTile(c, r);
+			var x = (c - startCol) * map.tsize + offsetX;
+			var y = (r - startRow) * map.tsize + offsetY;
 			if (tile !== 0) {
 				this.ctx.drawImage(
 					this.tileAtlas,
@@ -70,8 +147,8 @@ Game.render = function () {
 					Math.floor((tile - 1) / 4) * map.tsize,
 					map.tsize,
 					map.tsize,
-					c * map.tsize,
-					r * map.tsize,
+					Math.round(x),
+					Math.round(y),
 					map.tsize,
 					map.tsize
 				);
