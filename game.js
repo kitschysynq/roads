@@ -104,6 +104,6 @@ var map = {
 		if (this.tiles[index] === 0) {
 			this.tiles[index] = Math.floor(Math.random() * 12 + 1);
 		};
-		return this.tiles[row * map.cols + col]
+		return this.tiles[index]
 	}
 };
