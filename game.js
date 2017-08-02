@@ -1,3 +1,4 @@
+
 var Loader = {
 	images: {}
 };
@@ -85,7 +86,7 @@ var Game = {};
 
 Game.run = function (context) {
 	this.ctx = context;
-	this._previousElapsesd = 0;
+	this._previousElapsed = 0;
 
 	var p = this.load();
 	Promise.all(p).then(function (loaded) {
