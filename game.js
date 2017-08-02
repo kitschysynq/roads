@@ -136,7 +136,7 @@ Game.render = function () {
 	var offsetX = -this.camera.x + startCol * map.tsize;
 	var offsetY = -this.camera.y + startRow * map.tsize;
 
-	for (var c = startCol; c <= endCol; c++) {
+	for (var c = startCol; c <= endCol + 1; c++) {
 		for (var r = startRow; r <= endRow + 1; r++) {
 			var tile = map.getTile(c, r);
 			var x = (c - startCol) * map.tsize + offsetX;
