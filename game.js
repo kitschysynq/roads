@@ -65,6 +65,7 @@ Keyboard.isDown = function (keyCode) {
 };
 
 function Camera (map, width, height) {
+	this.map = map;
 	this.x = 0;
 	this.y = 0;
 	this.width = width;
@@ -115,7 +116,8 @@ Game.init = function () {
 	Keyboard.listenForEvents(
 		[Keyboard.LEFT, Keyboard.RIGHT, Keyboard.UP, Keyboard.DOWN]);
 	this.tileAtlas = Loader.getImage('tiles');
-	this.camera = new Camera(map, 640, 480);
+	map2.init(8, 8);
+	this.camera = new Camera(map2, 640, 480);
 };
 
 Game.update = function (delta) {
@@ -129,29 +131,29 @@ Game.update = function (delta) {
 };
 
 Game.render = function () {
-	var startCol = Math.floor(this.camera.x / map.tsize);
-	var endCol = startCol + (this.camera.width / map.tsize);
-	var startRow = Math.floor(this.camera.y / map.tsize);
-	var endRow = startRow + (this.camera.height / map.tsize);
-	var offsetX = -this.camera.x + startCol * map.tsize;
-	var offsetY = -this.camera.y + startRow * map.tsize;
+	var startCol = Math.floor(this.camera.x / this.camera.map.tsize);
+	var endCol = startCol + (this.camera.width / this.camera.map.tsize);
+	var startRow = Math.floor(this.camera.y / this.camera.map.tsize);
+	var endRow = startRow + (this.camera.height / this.camera.map.tsize);
+	var offsetX = -this.camera.x + startCol * this.camera.map.tsize;
+	var offsetY = -this.camera.y + startRow * this.camera.map.tsize;
 
 	for (var c = startCol; c <= endCol + 1; c++) {
 		for (var r = startRow; r <= endRow + 1; r++) {
-			var tile = map.getTile(c, r);
-			var x = (c - startCol) * map.tsize + offsetX;
-			var y = (r - startRow) * map.tsize + offsetY;
+			var tile = this.camera.map.getTile(c, r);
+			var x = (c - startCol) * this.camera.map.tsize + offsetX;
+			var y = (r - startRow) * this.camera.map.tsize + offsetY;
 			if (tile !== 0) {
 				this.ctx.drawImage(
 					this.tileAtlas,
-					((tile - 1) % 4) * map.tsize,
-					Math.floor((tile - 1) / 4) * map.tsize,
-					map.tsize,
-					map.tsize,
+					((tile - 1) % 4) * this.camera.map.tsize,
+					Math.floor((tile - 1) / 4) * this.camera.map.tsize,
+					this.camera.map.tsize,
+					this.camera.map.tsize,
 					Math.round(x),
 					Math.round(y),
-					map.tsize,
-					map.tsize
+					this.camera.map.tsize,
+					this.camera.map.tsize
 				);
 			}
 		}
@@ -163,25 +165,40 @@ window.onload = function () {
 	Game.run(context);
 };
 
-var map = {
+var map2 = {
 	cols: 8,
 	rows: 8,
 	tsize: 256,
-	tiles: [
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0
-	],
-	getTile: function(col, row) {
-		var index = row * map.cols + col;
-		if (this.tiles[index] === 0) {
-			this.tiles[index] = Math.floor(Math.random() * 12 + 1);
-		};
-		return this.tiles[index]
-	}
-};
+	tiles: {},
+	init: function (c, r) {
+		this.cols = c;
+		this.rows = r;
+		for(var col = 0; col < c; col++) {
+			for(var row = 0; row < r; row++) {
+				this.tiles[[col, row]] = (
+						(col != 0) * 8 +
+						(col != Math.floor(c - 1)) * 4 +
+						(row != 0) * 2 +
+						(row != Math.floor(r - 1)) * 1
+				);
+			}
+		}
+	},
+	getTile: function (c, r) {
+		return this.TILES.get(this.tiles[[c, r]]);
+	},
+	TILES: new Map([
+		[0,  6],
+		[3,  4],
+		[5,  7],
+		[6,  2],
+		[7,  9],
+		[9,  8],
+		[10,  5],
+		[11, 12],
+		[12,  1],
+		[13, 11],
+		[14, 10],
+		[15,  3]
+	])
+}
